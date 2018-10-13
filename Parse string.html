@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    let inputString = "{Anton}} {Art{{{}}}em} { Aleksey} {Artem} {Vitaliy Kliauzo}{Melkumov} {Ignatyev} {Sedelnik} {Vlasik}{a{s}d}";
+
+    function parseString(targetString, opening = '{', closing = '}') {
+        const DEFAULT_COLOR = 'white';
+        const colorMap = ['green', 'yellow', 'red', 'purple', 'blue'];
+        let resultInfo = [];
+        let depth = 0;
+        let startIndexes = {};
+        for (let i = 0; i < targetString.length; i += 1) {
+            if (targetString.charAt(i) === closing && depth > 0) {
+                resultInfo.push({
+                    color: colorMap[depth - 1] || DEFAULT_COLOR,
+                    start: startIndexes[depth],
+                    end: i + 1,
+                    string: targetString.slice(startIndexes[depth] + 1, i)
+                });
+                depth -= 1;
+            } else if (targetString.charAt(i) === opening) {
+                depth += 1;
+                startIndexes[depth] = i;
+            }
+        }
+        return resultInfo;
+    }
+
+    console.log(inputString);
+    let start = performance.now();
+    console.log(parseString(inputString));
+    console.log(performance.now() - start);
+
+</script>
+</body>
+</html>
