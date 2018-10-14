@@ -3,38 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .green {
+            color: green
+        }
+
+        .blue {
+            color: blue;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .purple {
+            color: purple;
+        }
+    </style>
 </head>
 <body>
 <script>
-    let inputString = "{Anton}} {Art{{{}}}em} { Aleksey} {Artem} {Vitaliy Kliauzo}{Melkumov} {Ignatyev} {Sedelnik} {Vlasik}{a{s}d}";
+    let inputString = "{Anton{Kse{ASDasdasdads}niya} {Mama} Vlasik}bdkdkfjds,dskfdkdkfdk{fjdkdkdklsjfslfslsdjldkfsldfjslkfjsldjk";
 
-    function parseString(targetString, opening = '{', closing = '}') {
+    function parseString(input, opening = '{', closing = '}') {
         const DEFAULT_COLOR = 'white';
-        const colorMap = ['green', 'yellow', 'red', 'purple', 'blue'];
-        let resultInfo = [];
+        const colorMap = ['green', 'blue', 'red', 'purple', 'yellow'];
+        let string = '';
+        let parse = [];
         let depth = 0;
         let startIndexes = {};
-        for (let i = 0; i < targetString.length; i += 1) {
-            if (targetString.charAt(i) === closing && depth > 0) {
-                resultInfo.push({
+        for (let i = 0; i < input.length; i += 1) {
+            const currentChar = input.charAt(i);
+            if (currentChar === closing && depth > 0) {
+                parse.push({
                     color: colorMap[depth - 1] || DEFAULT_COLOR,
                     start: startIndexes[depth],
                     end: i + 1,
-                    string: targetString.slice(startIndexes[depth] + 1, i)
+                    string: input.slice(startIndexes[depth] + 1, i)
                 });
                 depth -= 1;
-            } else if (targetString.charAt(i) === opening) {
+                string += `</span>${currentChar}`;
+            } else if (currentChar === opening) {
                 depth += 1;
                 startIndexes[depth] = i;
+                string += `${currentChar}<span class="${colorMap[depth - 1] || DEFAULT_COLOR}">`;
+            } else {
+                string += currentChar;
             }
         }
-        return resultInfo;
+        return {parse, string};
     }
 
-    console.log(inputString);
     let start = performance.now();
-    console.log(parseString(inputString));
+    const {string, parse} = parseString(inputString);
     console.log(performance.now() - start);
+    console.log(parse);
+
+    document.body.innerHTML = string;
 
 </script>
 </body>
