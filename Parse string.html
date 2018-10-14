@@ -26,12 +26,12 @@
     let inputString = "{Anton{Kse{ASDasdasdads}niya} {Mama} Vlasik}bdkdkfjds,dskfdkdkfdk{fjdkdkdklsjfslfslsdjldkfsldfjslkfjsldjk";
 
     function parseString(input, opening = '{', closing = '}') {
-        const DEFAULT_COLOR = 'white';
+        const DEFAULT_COLOR = 'transparent';
         const colorMap = ['green', 'blue', 'red', 'purple', 'yellow'];
+        const parse = [];
+        const startIndexes = {};
         let string = '';
-        let parse = [];
         let depth = 0;
-        let startIndexes = {};
         for (let i = 0; i < input.length; i += 1) {
             const currentChar = input.charAt(i);
             if (currentChar === closing && depth > 0) {
