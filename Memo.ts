@@ -15,7 +15,7 @@
  *
  * If argument didn't change precalculated result would return
  */
-function memoize(func) {
+function memoize(func: Function) {
     const cache = {};
     return param => {
         if(cache.hasOwnProperty(param)) {

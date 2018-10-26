@@ -1,6 +1,5 @@
-function isSorted(arr, type) {
-    if (type === void 0) { type = 'asc'; }
-    for (var i = 0; i < arr.length - 1; i++) {
+function isSorted(arr, type = 'asc') {
+    for (let i = 0; i < arr.length - 1; i++) {
         if (type === 'asc') {
             return arr[i] <= arr[i + 1];
         }

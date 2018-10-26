@@ -1,6 +1,5 @@
 //counter reducer
-var counter = function (state, action) {
-    if (state === void 0) { state = 0; }
+const counter = (state = 0, action) => {
     switch (action.type) {
         case 'INCREMENT':
             return state + 1;
@@ -10,35 +9,35 @@ var counter = function (state, action) {
             return state;
     }
 };
-var render = function () {
+const render = () => {
     console.log('render fired');
     document.getElementById('root').innerText = store.getState();
 };
-var createStore = function (reducer) {
-    var state;
-    var listeners = [];
-    var getState = function () { return state; };
-    var dispatch = function (action) {
+const createStore = (reducer) => {
+    let state;
+    let listeners = [];
+    const getState = () => state;
+    const dispatch = (action) => {
         state = reducer(state, action);
-        listeners.forEach(function (listener) { return listener(); });
+        listeners.forEach(listener => listener());
     };
-    var subscribe = function (listener) {
+    const subscribe = (listener) => {
         listeners.push(listener);
-        return function () {
+        return () => {
             console.log('Unsubscribing');
-            listeners = listeners.filter(function (l) { return l !== listener; });
+            listeners = listeners.filter(l => l !== listener);
         };
     };
     dispatch({});
-    return { getState: getState, dispatch: dispatch, subscribe: subscribe };
+    return { getState, dispatch, subscribe };
 };
-var store = createStore(counter);
-var subscriber = store.subscribe(render);
+const store = createStore(counter);
+const subscriber = store.subscribe(render);
 render();
-document.addEventListener('click', function () {
+document.addEventListener('click', () => {
     console.log('dispatch fired');
     store.dispatch({ type: 'INCREMENT' });
 });
-document.getElementById('unsubscribe').addEventListener('click', function () {
+document.getElementById('unsubscribe').addEventListener('click', () => {
     subscriber();
 });

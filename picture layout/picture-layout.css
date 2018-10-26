@@ -1,0 +1,79 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.outer-wrapper {
+    background-color: lightgrey;
+    margin: auto;
+    margin-top: 100px;
+    padding: 20px;
+    max-width: 1000px;
+}
+
+.gallery-wrapper {
+    position: relative;
+    font-size: 0; /* for removal spaces between elements*/
+}
+
+.image-wrapper {
+    display: inline-block;
+    width: 33.33333333%;
+    background-size: cover;
+}
+
+.image-wrapper:before {
+    content: '';
+    display: inline-block;
+    padding-top: 75%;
+}
+
+.image-wrapper.main {
+    width: 66.66666667%;
+}
+
+/* For the second the image */
+
+.image-wrapper.sub.first {
+    display: inline-block;
+    width: 33.33333333%;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.image-wrapper.sub.first:before {
+    content: '';
+    display: inline-block;
+    padding-top: 75%;
+}
+
+.inner-overlay {
+    position: absolute;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+.sub.with-overlay {
+    position: relative;
+}
+
+.overlay-text {
+    font-size: 15px;
+    text-align: center;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: lightgrey;
+    text-transform: uppercase;
+    width: 100%;
+}

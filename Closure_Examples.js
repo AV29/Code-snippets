@@ -9,7 +9,7 @@
  * counter.reset();
  */
 function makeCounter() {
-    var currentCounter = 1;
+    let currentCounter = 1;
     function counter() {
         return currentCounter++;
     }
@@ -45,7 +45,7 @@ function sum(a) {
  * buffer.clear();
  */
 function makeBuffer() {
-    var text = "";
+    let text = "";
     function buffer(piece) {
         if (!arguments.length)
             return text;
@@ -70,8 +70,8 @@ function makeBuffer() {
  * filter([1, 2, 3, 4, 5, 6, 7], inArray([1, 2, 10]));
  */
 function filter(arr, func) {
-    var result = [];
-    for (var i = 0; i < arr.length; i++) {
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
         if (func(arr[i]))
             result.push(arr[i]);
     }
@@ -87,12 +87,12 @@ function filter(arr, func) {
  * army[5]();
  */
 function makeArmy() {
-    var shooters = [];
+    const shooters = [];
     // because of var - i is declared here = undefined and thus stored in upper closure
     // By the end of cycle i = 10; Inner functions take i from closure, where it is 10.
     for (var i = 0; i < 10; i++) { // 1) We can use "let" instead of "var" - thus use inner scope for index
         //function(i) {  // 2) Another way is to add here additional closure to store actual index value
-        var shooter = function () {
+        const shooter = function () {
             console.log(i);
         };
         shooters.push(shooter);
@@ -107,8 +107,8 @@ function makeArmy() {
  * @example calcWithReduce(1)(2)(3)(4)(reducer)
  */
 function calcWithReduce(firstArg) {
-    var store = [firstArg];
-    var next = function (arg) {
+    const store = [firstArg];
+    const next = function (arg) {
         if (typeof arg !== 'function') {
             store.push(arg);
             return next;
@@ -124,8 +124,8 @@ function calcWithReduce(firstArg) {
  * @example calcUnlimited(1)(2)(3)(4)(67)(12)...(N)
  */
 function calcUnlimited(firstArg) {
-    var result = firstArg;
-    var next = function (nextArg) {
+    let result = firstArg;
+    const next = function (nextArg) {
         result += nextArg;
         return next;
     };
