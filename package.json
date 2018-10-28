@@ -2,6 +2,6 @@
   "name": "Code-snippets",
   "version": "0.0.1",
   "scripts": {
-    "start": "tsc --watch --target es6"
+    "start": "tsc"
   }
 }
