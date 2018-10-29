@@ -2,6 +2,7 @@
   "name": "Code-snippets",
   "version": "0.0.1",
   "scripts": {
+    "prestart": "git config user.email snumber29@gmail.com",
     "start": "tsc"
   }
 }
