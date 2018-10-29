@@ -32,7 +32,7 @@ class Example {
     constructor(name?, age?) {
         console.log('In constructor itself! ', name, age);
     }
-    
+
     @test(129)
     public static sum(a: number, b: number): number {
         console.log('Inside function itself ');

@@ -8,20 +8,27 @@
  * counter.get();
  * counter.reset();
  */
+interface IMakeCounter {
+    (): number;
+    set(value: number): void;
+    get(): number;
+    reset(): void;
+}
+
 function makeCounter() {
     let currentCounter = 1;
 
-    function counter() {
+    const counter = <IMakeCounter>((): number => {
         return currentCounter++;
-    }
+    });
 
-    counter["set"] = function (value) {
+    counter.set = function (value) {
         currentCounter = value;
     };
-    counter["reset"] = function () {
+    counter.reset = function () {
         currentCounter = 1;
     };
-    counter["get"] = function () {
+    counter.get = function () {
         return currentCounter;
     };
 
