@@ -24,6 +24,7 @@ function makeCounter() {
     counter["get"] = function () {
         return currentCounter;
     };
+
     return counter;
 }
 
@@ -51,9 +52,12 @@ function sum(a) {
 function makeBuffer(): Function {
     let text = "";
 
-    function buffer(piece: string): void | string {
-        if (!arguments.length) return text;
+    function buffer(piece: string): void {
         text += piece;
+    }
+
+    function showText(): string {
+        return text;
     }
 
     buffer["clear"] = function () {
@@ -83,6 +87,7 @@ function filter(arr: any[], func: Function) {
     return result;
 }
 
+
 /**
  * @name makeArmy.
  * A good example of how closure could play an unexpected role. Output 10 and 10
@@ -96,7 +101,7 @@ function makeArmy() {
     const shooters = [];
     // because of var - i is declared here = undefined and thus stored in upper closure
     // By the end of cycle i = 10; Inner functions take i from closure, where it is 10.
-    for (var i = 0; i < 10; i++) {  // 1) We can use "let" instead of "var" - thus use inner scope for index
+    for (let i = 0; i < 10; i++) {  // 1) We can use "let" instead of "var" - thus use inner scope for index
         //function(i) {  // 2) Another way is to add here additional closure to store actual index value
         const shooter = function () {
             console.log(i);

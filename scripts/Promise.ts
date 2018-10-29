@@ -1,4 +1,3 @@
-
 const delay = time => new Promise(res => setTimeout(() => {
     console.log('Ready!');
     res();
@@ -44,5 +43,3 @@ function outerCatch(data) {
     console.log(data);
     console.log("In OUTER CATCH");
 }
-
-delay(1000).then(() =>  createPromise().then(firstThen).then(secondThen).then(console.log).catch(outerCatch));

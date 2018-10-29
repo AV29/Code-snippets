@@ -18,10 +18,9 @@
 function memoize(func: Function) {
     const cache = {};
     return param => {
-        if(cache.hasOwnProperty(param)) {
-            return cache[param];
-        } else {
+        if (!cache.hasOwnProperty(param)) {
             cache[param] = func(param);
         }
+        return cache[param];
     }
 }
