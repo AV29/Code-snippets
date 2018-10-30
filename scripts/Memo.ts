@@ -15,12 +15,17 @@
  *
  * If argument didn't change precalculated result would return
  */
-function memoize(func: Function) {
-    const cache = {};
-    return (param: any) => {
-        if (!cache.hasOwnProperty(param)) {
-            cache[param] = func(param);
+function memoize(func: Function): Function {
+    const cache: Object = {};
+    return function (...args: any[]): any {
+        const key = args[0];
+        const cashedArgs: any = cache.hasOwnProperty(key) && cache[key].args;
+        if (!cashedArgs || cashedArgs.length !== args.length || cashedArgs.some((arg, i) => arg !== args[i])) {
+            cache[key] = {
+                args: [...args],
+                result: func(...args)
+            };
         }
-        return cache[param];
+        return cache[key].result;
     }
 }
