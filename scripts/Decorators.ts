@@ -26,7 +26,19 @@ function classDecorator(Class: Function): void {
     console.log('Constructor data: ', Class);
 }
 
-@classDecorator
+function classLogger<T extends Function>(Target: any): any {
+    const newCtor =  function (...args): any {
+        console.log('Before constructor');
+        //console.log('after constructor');
+        return new Target(...args);
+    };
+    newCtor.prototype = Object.create(Target.prototype);
+    newCtor.prototype.constructor = Target;
+
+    return newCtor;
+}
+
+@classLogger
 class Example {
 
     constructor(name?, age?) {
