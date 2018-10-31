@@ -10,13 +10,18 @@ interface Iterator<T> {
 }
 
 interface Iterable<T> {
-    from?: any,
-    to?: any,
     [Symbol.iterator](): Iterator<T>
 }
 
-function range(from: number, to: number): Iterable<number> {
+interface IRange<T> extends Iterable<T> {
+    length: T,
+    from: T,
+    to: T,
+}
+
+function range(from: number, to: number): IRange<number> {
     return {
+        length: to - from + 1,
         from,
         to,
         [Symbol.iterator](): Iterator<number> {
@@ -34,6 +39,10 @@ function range(from: number, to: number): Iterable<number> {
     };
 }
 
-for (let num of range(4, 9)) {
+const r = range(4, 9);
+
+for (let num of r) {
     console.log(num);
 }
+
+console.log(Math.max(...r));
