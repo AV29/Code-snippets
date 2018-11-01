@@ -14,7 +14,8 @@ function measurePerformance(...args): void {
     for (let i = 0; i < times; i++) {
         result = func(...args.slice(isTimesOmitted ? 1 : 2))
     }
-    console.log(result);
+    console.group(func.name);
+    console.log("Result", result);
     console.log(`Time: ${parseFloat((performance.now() - start).toFixed(2))} ms`);
-    console.log('------------------------');
+    console.groupEnd();
 }
