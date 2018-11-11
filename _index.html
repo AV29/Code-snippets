@@ -5,16 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-<div id="root"></div>
-<button id='unsubscribe'>Unsubscribe</button>
 <script src="scripts/Measure_Performance.js"></script>
-<script src="scripts/Split_Ones_and_Zeros.js"></script>
+<script src="scripts/BigNum.js"></script>
 <script>
-    const arr = [1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1];
-    measurePerformance(100000, splitOnesZeros_0, arr);
-    measurePerformance(100000, splitOnesZeros_1, arr);
-    measurePerformance(100000, splitOnesZeros_2, arr);
-    measurePerformance(100000, splitOnesZeros_3, arr);
+    measurePerformance(bigNumMultiplication, 1234567890, 1234567890);
 </script>
 </body>
 </html>
