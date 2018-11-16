@@ -27,10 +27,11 @@ function classDecorator(Class: Function): void {
 }
 
 function classLogger<T extends Function>(Target: any): any {
-    const newCtor =  function (...args): any {
+    const newCtor = function (...args): any {
         console.log('Before constructor');
-        //console.log('after constructor');
-        return new Target(...args);
+        const res = new Target(...args);
+        console.log('after constructor');
+        return res;
     };
     newCtor.prototype = Object.create(Target.prototype);
     newCtor.prototype.constructor = Target;
@@ -38,6 +39,16 @@ function classLogger<T extends Function>(Target: any): any {
     return newCtor;
 }
 
+function AddFunctionThatDisplaysTextDecorator(methodName: string, someText: string): ClassDecorator {
+    return (constructor: Function) => {
+        console.log(`Adding with ${someText}`);
+        constructor.prototype[methodName] = function() {console.log(someText)}
+    }
+}
+
+@AddFunctionThatDisplaysTextDecorator('add1', 'Anton')
+@AddFunctionThatDisplaysTextDecorator('add2', 'Vlasik')
+//@Singletonize
 @classLogger
 class Example {
 
@@ -45,7 +56,7 @@ class Example {
         console.log('In constructor itself! ', name, age);
     }
 
-    @test(129)
+    //@test(129)
     public static sum(a: number, b: number): number {
         console.log('Inside function itself ');
         return a + b;
@@ -59,6 +70,8 @@ class Example {
 }
 
 const e = new Example('Anton', 30);
+const f = new Example('Anton', 29);
+console.log(e);
 
 //Example.sum(1, 2);
 
