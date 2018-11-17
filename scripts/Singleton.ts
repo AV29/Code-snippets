@@ -15,3 +15,21 @@ let Singleton = function () {
         return onlyInstance;
     }
 };
+
+class Singleton_Seed
+{
+    private static _instance: Singleton_Seed;
+
+    private constructor()
+    {
+        //...
+    }
+
+    public static get Instance()
+    {
+        // Do you need arguments? Make it a regular method instead.
+        return this._instance || (this._instance = new this());
+    }
+}
+
+const Singleton_2 = Singleton_Seed.Instance;
