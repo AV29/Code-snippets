@@ -1,6 +1,8 @@
+const getRandomBinary = () => Math.random() >= 0.5 ? 1 : 0;
+
 class MultiplePromises {
     constructor(asyncTasks) {
-        this._registeredTasks = asyncTasks.map(task => task);
+        this._registeredTasks = asyncTasks;
     }
 
     private _registeredTasks = [];
@@ -13,7 +15,7 @@ class MultiplePromises {
         const promises = [];
         this._registeredTasks.forEach(task => {
             if (task && task.Status === AsyncTaskStatus.NotPerformed || task.Status === AsyncTaskStatus.Failed) {
-                promises.push(task.Execute());
+                promises.push(new Promise((resolve, reject) => task.Execute(resolve, reject)) );
             }
         });
 
@@ -25,6 +27,8 @@ class AsyncTask {
     private _status: AsyncTaskStatus = AsyncTaskStatus.NotPerformed;
 
     private _asyncTask = null;
+
+    private _name = '';
 
     get Action() {
         return this._asyncTask;
@@ -43,19 +47,26 @@ class AsyncTask {
     }
 
     constructor(name: string, ms: number) {
-        this._asyncTask = () => new Promise((resolve, reject) => {
+        this._name = name;
+        this.Action = () => new Promise((resolve, reject) => {
+            let start = performance.now();
             setTimeout(() => {
-                resolve(`${name} is finished`);
-            }, 1000);
+                let time = Math.floor(performance.now() - start);
+                getRandomBinary() ? resolve(`Resolved ${name} in ${time} ms`) : reject(`Rejected ${name} in ${time} ms`);
+            }, ms);
         });
     }
 
-    public Execute(...args: any[]) {
+    public Execute(resolve, reject) {
         this.Status = AsyncTaskStatus.Pending;
-        return this.Action.apply(this, args).then(() => {
+        return this.Action().then(result => {
+            console.log(`Resolving... ${this._name}`);
             this.Status = AsyncTaskStatus.Success;
+            resolve(result);//return result;
         }).catch(err => {
+            console.log(`Rejecting... ${this._name}`);
             this.Status = AsyncTaskStatus.Failed;
+            reject(err);//return err;
         });
     }
 }
@@ -67,9 +78,18 @@ const enum AsyncTaskStatus {
     Success = 4
 }
 
-const deferreds = [new AsyncTask('Anton', 1000), new AsyncTask('Kseniya', 5000)];
+const deferreds = [new AsyncTask('Anton', 100), new AsyncTask('Kseniya', 1500)];
 
 const multPromises = new MultiplePromises(deferreds);
 
 
-multPromises.ensureDynamicActionsRetrieved().then(console.log);
+const handleThen = result => {
+  console.log('------- Resolved promise.all -------');
+  console.log(result);
+};
+const handleCatch = err => {
+  console.log('------- Rejected promise.all ------');
+  console.log(err);
+};
+
+multPromises.ensureDynamicActionsRetrieved().then(handleThen).catch(handleCatch);
