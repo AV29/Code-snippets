@@ -122,6 +122,50 @@ class AsyncTask implements IAsyncTask {
     }
 }
 
+let GlobalVar = 1;
+
+function createAdHocPromiseScope() {
+
+    let isResolved = false;
+    let GlobalResult = {};
+
+    function ensureAllResolved() {
+        if (isResolved) return Promise.resolve({status: 'Success', result: GlobalResult});
+        return new Promise((resolve, reject) => {
+            getFakeDataAndDoSomething().then(
+                result => {
+                    resolve({status: 'Success', result});
+                    isResolved = true;
+                    GlobalResult = result;
+                },
+                result => {
+                    reject({status: 'Failure', result});
+                }
+            );
+        });
+    }
+
+    function getFakeDataAndDoSomething() {
+        return new Promise((resolve, reject) => {
+            let start = performance.now();
+            setTimeout(() => {
+                let time = Math.floor(performance.now() - start);
+                if (getRandom(0, 1)) {
+                    GlobalVar = 29;
+                    resolve(`Resolved in ${time} ms`);
+                } else {
+                    GlobalVar = 100;
+                    reject(`Rejected in ${time} ms`);
+                }
+            }, getRandom(500, 1500));
+        });
+    }
+
+    document.querySelector('#run2').addEventListener('click', function () {
+        ensureAllResolved().then(console.log).catch(console.log);
+    });
+}
+
 function asyncTestCustom1(...args): AsyncAction {
     return () => {
         return new Promise(res => {
@@ -151,7 +195,8 @@ const multiPromises = new MultiplePromises([task1]);
 
 multiPromises.RegisterTask(task2);
 
-const run = document.querySelector('#run').addEventListener('click', function () {
+document.querySelector('#run').addEventListener('click', function () {
     multiPromises.EnsureAllResolved().then(console.log, console.log);
 });
 
+createAdHocPromiseScope();
