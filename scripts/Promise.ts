@@ -43,3 +43,15 @@ function outerCatch(data) {
     console.log(data);
     console.log("In OUTER CATCH");
 }
+
+function getDemoAction() {
+    return () => new Promise((resolve, reject) => {
+        let start = performance.now();
+        setTimeout(() => {
+            let time = Math.floor(performance.now() - start);
+            getRandom(0, 1)
+                ? resolve(`Resolved ${this._name} in ${time} ms`)
+                : reject(`Rejected ${this._name} in ${time} ms`);
+        }, getRandom(500, 1500));
+    });
+}
