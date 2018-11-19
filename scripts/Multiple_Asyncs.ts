@@ -1,14 +1,29 @@
-type callbackConfigType =
-    {
-        success?: Function,
-        failure?: Function
-    };
+const enum AsyncStatus {
+    NotPerformed = 1,
+    Pending = 2,
+    Failure = 3,
+    Success = 4
+}
 
-const getRandomBinary = () => Math.random() >= 0.5 ? 1 : 0;
+type CallbackConfigType = {
+    success?: Function,
+    failure?: Function
+};
+
+type AsyncTaskResult = {
+    status: AsyncStatus,
+    result: any
+};
+
+interface IAsyncTask {
+    Status: AsyncStatus,
+    Action: Promise<AsyncTaskResult>,
+    CreateExecutionPromise: (resolve: Function, reject: Function) => Promise<any>
+}
 
 class MultiplePromises {
-    constructor(asyncTasks) {
-        this._registeredTasks = asyncTasks;
+    constructor(asyncTasks?) {
+        if (asyncTasks) this._registeredTasks = asyncTasks;
     }
 
     private _registeredTasks = [];
@@ -25,29 +40,31 @@ class MultiplePromises {
         this._multiTaskStatus = multiTaskStatus;
     }
 
-    public registerAsyncTask(asyncTask) {
-        this._registeredTasks.push(asyncTask)
+    public RegisterTask(task) {
+        this._registeredTasks.push(task);
     }
 
-    public ensureDynamicActionsRetrieved() {
+    public ensureAllResolved(): Promise<AsyncTaskResult> {
         if (this.MultiTaskStatus === AsyncStatus.Pending) return this._multiTaskPromise;
         this._multiTaskPromise = new Promise((multiTaskResolve, multiTaskReject) => {
             this.MultiTaskStatus = AsyncStatus.Pending;
             const promises = [];
             this._registeredTasks.forEach(task => {
                 if (task && task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure) {
-                    promises.push(new Promise((resolve, reject) => task.Execute(resolve, reject)));
+                    promises.push(new Promise(task.CreateExecutionPromise.bind(task)))
                 }
             });
 
             Promise.all(promises).then(
                 result => {
                     this.MultiTaskStatus = AsyncStatus.Success;
-                    multiTaskResolve(result);
+                    console.log('------- Resolved promise.all -------');
+                    multiTaskResolve({status: this.MultiTaskStatus, result});
                 },
                 err => {
                     this.MultiTaskStatus = AsyncStatus.Failure;
-                    multiTaskReject(err);
+                    console.log('------- Rejected promise.all ------');
+                    multiTaskReject({status: this.MultiTaskStatus, err});
                 });
         });
 
@@ -55,14 +72,26 @@ class MultiplePromises {
     }
 }
 
-class AsyncTask {
+class AsyncTask implements IAsyncTask {
     private _status: AsyncStatus = AsyncStatus.NotPerformed;
 
     private _asyncTask = null;
 
-    private _callbackConfig: callbackConfigType = {};
+    private _callbackConfig: CallbackConfigType = {};
 
-    private _name = '';
+    private _name = 'anonymous';
+
+    private getDemoAction() {
+        return () => new Promise((resolve, reject) => {
+            let start = performance.now();
+            setTimeout(() => {
+                let time = Math.floor(performance.now() - start);
+                getRandom(0, 1)
+                    ? resolve(`Resolved ${this._name} in ${time} ms`)
+                    : reject(`Rejected ${this._name} in ${time} ms`);
+            }, getRandom(500, 1500));
+        });
+    }
 
     get Action() {
         return this._asyncTask;
@@ -80,19 +109,12 @@ class AsyncTask {
         this._status = status;
     }
 
-    constructor(name: string, callbackConfig?: callbackConfigType) {
-        this._name = name;
+    constructor(action?: Function, callbackConfig?: CallbackConfigType) {
         if (callbackConfig) this._callbackConfig = callbackConfig;
-        this.Action = () => new Promise((resolve, reject) => {
-            let start = performance.now();
-            setTimeout(() => {
-                let time = Math.floor(performance.now() - start);
-                getRandom(0, 1) ? resolve(`Resolved ${name} in ${time} ms`) : reject(`Rejected ${name} in ${time} ms`);
-            }, getRandom(500, 1500));
-        });
+        this.Action = action;
     }
 
-    public Execute(resolve, reject) {
+    public CreateExecutionPromise(resolve, reject) {
         const {success, failure} = this._callbackConfig;
         this.Status = AsyncStatus.Pending;
         return this.Action().then(result => {
@@ -109,36 +131,32 @@ class AsyncTask {
     }
 }
 
-const enum AsyncStatus {
-    NotPerformed = 1,
-    Pending = 2,
-    Failure = 3,
-    Success = 4
+function asyncTestCustom1(...args) {
+    return () => {
+        return (new Promise(res => {
+            setTimeout(() => res(`Resolved asyncTestCustom, Args: ${args}`), 1000);
+        })).then(() => {console.log(args); return args;});
+    }
 }
 
+function asyncTestCustom2(...args) {
+    return () => {
+        return (new Promise(res => {
+            setTimeout(() => res(`Resolved asyncTestCustom, Args: ${args}`), 1500);
+        })).then(() => {console.log(args); return args;});
+    }
+}
+const multiPromises = new MultiplePromises();
 
-const antonCallback = () => console.log('A callback from Anton');
+const task1 = new AsyncTask(asyncTestCustom1(1, 2, 3));
+const task2 = new AsyncTask(asyncTestCustom2(5, 6, 7));
 
-const anton = new AsyncTask('Anton', {success: antonCallback});
-
-const kseniya = new AsyncTask('Kseniya');
-
-const deferreds = [anton, kseniya];
-
-const multPromises = new MultiplePromises(deferreds);
+multiPromises.RegisterTask(task1);
+multiPromises.RegisterTask(task2);
 
 function runHandler() {
-    multPromises.ensureDynamicActionsRetrieved().then(handleThen).catch(handleCatch);
+    multiPromises.ensureAllResolved().then(console.log, console.log);
 }
 
 const run = document.querySelector('#run').addEventListener('click', runHandler);
-
-const handleThen = result => {
-    console.log('------- Resolved promise.all -------');
-    console.log(result);
-};
-const handleCatch = err => {
-    console.log('------- Rejected promise.all ------');
-    console.log(err);
-};
 
