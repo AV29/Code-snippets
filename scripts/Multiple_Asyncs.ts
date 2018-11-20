@@ -20,6 +20,7 @@ interface IMultiplePromiseResult {
 type AsyncAction = () => Promise<any>
 
 interface IAsyncTask {
+    Result: any,
     Status: AsyncStatus,
     Action: AsyncAction,
     Execute: (resolve: Function, reject: Function) => Promise<any>
@@ -28,60 +29,62 @@ interface IAsyncTask {
 
 /* ------------------------------------- Multi Promise Native -------------------------------------------*/
 function InitMultiPromisesNative() {
-    class MultiplePromises {
 
-        private _registeredTasks: IAsyncTask[] = [];
-        private _finalResult = null;
-        private _multiTaskPromise = null;
+    class MultipleTasks {
 
-        private _multiTaskStatus = AsyncStatus.NotPerformed;
+        private static _registeredTasks: IAsyncTask[] = [];
+        private static _finalResult = {};
+        private static _multiTaskPromise = null;
 
-        get MultiTaskStatus(): AsyncStatus {
+        private static _multiTaskStatus = AsyncStatus.NotPerformed;
+
+        static get MultiTaskStatus(): AsyncStatus {
             return this._multiTaskStatus;
         }
 
-        set MultiTaskStatus(multiTaskStatus: AsyncStatus) {
+        static set MultiTaskStatus(multiTaskStatus: AsyncStatus) {
             this._multiTaskStatus = multiTaskStatus;
         }
 
-        private _handleFinally(handler: Function, status: AsyncStatus) {
-            return result => {
-                this._finalResult = result;
-                this.MultiTaskStatus = status;
-                handler({status, result});
-            }
+        private static _getResult() {
+            return {
+                status: this.MultiTaskStatus,
+                result: this._registeredTasks.map(task => task.Result)
+            };
         }
 
-        constructor(asyncTasks, ...restTasks) {
-            Array.isArray(asyncTasks)
-                ? this._registeredTasks = asyncTasks
-                : this._registeredTasks = [asyncTasks].concat(restTasks);
-        }
-
-        public RegisterTask(task: IAsyncTask): void {
+        static RegisterTask(task: IAsyncTask): void {
             this._registeredTasks.push(task);
         }
 
-        public EnsureAllResolved(): Promise<IMultiplePromiseResult> {
-            if (this.MultiTaskStatus === AsyncStatus.Success) return Promise.resolve({
-                status: this.MultiTaskStatus,
-                result: this._finalResult
-            });
-            if (this.MultiTaskStatus === AsyncStatus.Pending) return this._multiTaskPromise;
+        static RegisterTasks(tasks: IAsyncTask[]): void {
+            tasks.forEach(this.RegisterTask);
+        }
+
+        static EnsureAllResolved(): Promise<IMultiplePromiseResult> {
+            if (this.MultiTaskStatus === AsyncStatus.Success) return Promise.resolve(this._getResult());
+            if ((this.MultiTaskStatus === AsyncStatus.Pending) && this._multiTaskPromise) return this._multiTaskPromise;
+
             this._multiTaskPromise = new Promise((finalResolve, finalReject) => {
                 this.MultiTaskStatus = AsyncStatus.Pending;
                 const promises = [];
                 this._registeredTasks.forEach(task => {
-                    if (task && task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure) {
+                    if (task && (task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure)) {
                         promises.push(new Promise(task.Execute.bind(task)))
                     }
                 });
 
                 Promise
                     .all(promises)
-                    .then(
-                        this._handleFinally(finalResolve, AsyncStatus.Success),
-                        this._handleFinally(finalReject, AsyncStatus.Failure)
+                    .then(() => {
+                            this.MultiTaskStatus = AsyncStatus.Success;
+                            finalResolve(this._getResult());
+                        }
+                    )
+                    .catch(err => {
+                            this.MultiTaskStatus = AsyncStatus.Failure;
+                            finalReject({status: this.MultiTaskStatus, result: err});
+                        }
                     )
             });
 
@@ -95,6 +98,16 @@ function InitMultiPromisesNative() {
         private _asyncAction: AsyncAction = null;
 
         private _callbackConfig: ICallbackConfig = {};
+
+        private _result: any = null;
+
+        get Result(): any {
+            return this._result;
+        }
+
+        set Result(result: any) {
+            this._result = result;
+        }
 
         get Action(): AsyncAction {
             return this._asyncAction;
@@ -117,17 +130,18 @@ function InitMultiPromisesNative() {
             this.Action = action;
         }
 
-        public Execute(resolve?: Function, reject?: Function): Promise<any> {
+        public Execute(resolve: Function, reject: Function): Promise<any> {
             const {success, failure} = this._callbackConfig;
             this.Status = AsyncStatus.Pending;
             return this.Action().then(result => {
                 this.Status = AsyncStatus.Success;
-                success && success();
-                resolve && resolve(result);
+                this.Result = result;
+                success && success(result);
+                resolve(result);
             }).catch(err => {
                 this.Status = AsyncStatus.Failure;
-                failure && failure();
-                reject && reject(err);
+                failure && failure(err);
+                reject(err);
             });
         }
     }
@@ -145,20 +159,20 @@ function InitMultiPromisesNative() {
     }
 
     const task1 = new AsyncTask(asyncTestCustom(1, 2, 3), {
-        success: () => console.log('effective MULTI NATIVE Promise job is done')
+        success: result => console.log('effective MULTI NATIVE Promise job 111 is done', result) //add actions to model
     });
     const task2 = new AsyncTask(asyncTestCustom(5, 6, 7), {
-        success: () => console.log('effective MULTI NATIVE Promise job is done')
+        success: result => console.log('effective MULTI NATIVE Promise job 222 is done', result)
     });
 
-    const multiPromises = new MultiplePromises([task1]);
+    MultipleTasks.RegisterTask(task1);
+    MultipleTasks.RegisterTask(task2);
 
-    //multiPromises.RegisterTask(task2);
-
-    document.querySelector('#run').addEventListener('click', function () {
-        multiPromises.EnsureAllResolved().then(console.log, console.log);
+    document.querySelector('#multiple').addEventListener('click', function () {
+        MultipleTasks.EnsureAllResolved().then(console.log).catch(console.log);
     });
 }
+
 /* ------------------------------------- Single Promise Native -------------------------------------------*/
 
 function InitSinglePromiseNative() {
@@ -168,12 +182,12 @@ function InitSinglePromiseNative() {
     let activePromise = null;
     let cachedResult = {};
 
-    function ensureAllResolved(func) {
+    function ensureRegistredResolved() {
         if (isResolved) return Promise.resolve({status: AsyncStatus.Success, result: cachedResult});
         if (isPending && activePromise) return activePromise;
         activePromise = new Promise((resolve, reject) => {
             isPending = true;
-            func().then(
+            getDataAndDoSomething().then(
                 result => {
                     resolve({status: AsyncStatus.Success, result});
                     isResolved = true;
@@ -205,158 +219,171 @@ function InitSinglePromiseNative() {
             getData(1, 2, 3)
                 .then(result => {
                     console.log('effective SINGLE NATIVE Promise job is done');
+                    //addAction to model
                     resolve(result);
                 })
                 .catch(reject);
         });
     }
 
-    document.querySelector('#run2').addEventListener('click', function () {
-        ensureAllResolved(getDataAndDoSomething)
+    document.querySelector('#single').addEventListener('click', function () {
+        ensureRegistredResolved()
             .then(console.log)
             .catch(console.log);
     });
 }
+
 /* ------------------------------------- Multi Promises Jquery -------------------------------------------*/
 
 /*
 function InitMultiPromisesJQuery() {
-    const AsyncStatus = {
-        NotPerformed: 1,
-        Pending: 2,
-        Failure: 3,
-        Success: 4
-    };
+        const AsyncStatus = {
+            NotPerformed: 1,
+            Pending: 2,
+            Failure: 3,
+            Success: 4
+        };
 
-    class JQuery_MultiplePromises {
+        class JQuery_MultiplePromises {
 
-        get MultiTaskStatus() {
-            return this._multiTaskStatus;
-        }
+            get AllTasksStatus() {
+                return this._allTasksStatus;
+            }
 
-        set MultiTaskStatus(multiTaskStatus) {
-            this._multiTaskStatus = multiTaskStatus;
-        }
+            set AllTasksStatus(allTasksStatus) {
+                this._allTasksStatus = allTasksStatus;
+            }
 
-        _handleFinally(handler, status) {
-            return result => {
-                this._finalResult = result;
-                this.MultiTaskStatus = status;
-                handler({status, result});
+            constructor(asyncTasks, ...restTasks) {
+                this._registeredTasks = [];
+                this._deferred = null;
+                this._activePromise = null;
+                this._allTasksStatus = AsyncStatus.NotPerformed;
+
+                Array.isArray(asyncTasks)
+                    ? this._registeredTasks = asyncTasks
+                    : this._registeredTasks = [asyncTasks].concat(restTasks);
+            }
+
+            RegisterTask(task) {
+                this._registeredTasks.push(task);
+            }
+
+            GetResult() {
+                return {
+                    Status: this.AllTasksStatus,
+                    Result: this._registeredTasks.map(task => task.Result)
+                };
+            }
+
+            EnsureAllResolved() {
+                if ((this.AllTasksStatus === AsyncStatus.Pending) && this._activePromise) return this._activePromise;
+                if (this.AllTasksStatus === AsyncStatus.Success) return this._deferred.resolve(this.GetResult());
+                this._deferred = $.Deferred();
+                this.AllTasksStatus = AsyncStatus.Pending;
+                const promises = [];
+                this._registeredTasks.forEach(task => {
+                    if (task && (task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure)) {
+                        const taskWrapper = $.Deferred();
+                        task.Execute(taskWrapper.resolve, taskWrapper.reject);
+                        promises.push(taskWrapper.promise());
+                    }
+                });
+
+                $.when
+                    .apply($, promises)
+                    .then(() => {
+                        this.AllTasksStatus = AsyncStatus.Success;
+                        this._deferred.resolve(this.GetResult());
+                    }, err => {
+                        this.AllTasksStatus = AsyncStatus.Failure;
+                        this._deferred.reject({ Status: this.AllTasksStatus, Result: err });
+                    });
+
+                this._activePromise = this._deferred.promise();
+                return this._activePromise;
             }
         }
 
-        constructor(asyncTasks, ...restTasks) {
-            this._finalResult = {};
-            this._registeredTasks = [];
-            this._deferred = null;
-            this._activePromise = null;
-            this._multiTaskStatus = AsyncStatus.NotPerformed;
+        class JQuery_AsyncTask {
 
-            Array.isArray(asyncTasks)
-                ? this._registeredTasks = asyncTasks
-                : this._registeredTasks = [asyncTasks].concat(restTasks);
+            get Result() {
+                return this._result;
+            }
+
+            set Result(result) {
+                this._result = result;
+            }
+
+            get Action() {
+                return this._asyncAction;
+            }
+
+            set Action(asyncAction) {
+                this._asyncAction = asyncAction;
+            }
+
+            get Status() {
+                return this._status;
+            }
+
+            set Status(status) {
+                this._status = status;
+            }
+
+            constructor(action, callbackConfig) {
+                this._result = null;
+                this._status = AsyncStatus.NotPerformed;
+                this._asyncAction = null;
+                this._callbackConfig = {};
+
+                if (callbackConfig) this._callbackConfig = callbackConfig;
+                this.Action = action;
+            }
+
+            Execute(resolve, reject) {
+                const {success, failure} = this._callbackConfig;
+                this.Status = AsyncStatus.Pending;
+                return this.Action().then(result => {
+                    this.Status = AsyncStatus.Success;
+                    this.Result = result;
+                    success && success();
+                    resolve(result);
+                }).catch(err => {
+                    this.Status = AsyncStatus.Failure;
+                    failure && failure();
+                    reject(err);
+                });
+            }
         }
 
-        RegisterTask(task) {
-            this._registeredTasks.push(task);
+        function asyncTestCustom(...args) {
+            return () => {
+                const deferred = $.Deferred();
+                setTimeout(() => {
+                    getRandom(0, 1)
+                        ? deferred.resolve(`Resolved asyncTestCustom, Args: ${args}`)
+                        : deferred.reject(`Rejected asyncTestCustom, Args: ${args}`);
+                }, getRandom(500, 1500));
+                return deferred.promise();
+            }
         }
 
-        EnsureAllResolved() {
-            if (this.MultiTaskStatus === AsyncStatus.Pending) return this._activePromise;
-            if (this.MultiTaskStatus === AsyncStatus.Success) return this._deferred.resolve({
-                status: 'Success',
-                result: this._finalResult
-            });
-            this._deferred = $.Deferred();
-            this.MultiTaskStatus = AsyncStatus.Pending;
-            const promises = [];
-            this._registeredTasks.forEach(task => {
-                if (task && task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure) {
-                    promises.push(new Promise(task.Execute.bind(task)))
-                }
-            });
+        const task1 = new JQuery_AsyncTask(asyncTestCustom(1, 2, 3), {
+            success: () => console.log('Effective MULTI JQUERY Promise job is done'),
+        });
+        const task2 = new JQuery_AsyncTask(asyncTestCustom(5, 6, 7), {
+            success: () => console.log('Effective MULTI JQUERY Promise job is done'),
+        });
 
-            $.when
-                .apply($, promises)
-                .then(
-                    this._handleFinally(this._deferred.resolve, AsyncStatus.Success),
-                    this._handleFinally(this._deferred.reject, AsyncStatus.Failure)
-                );
+        const multiPromises = new JQuery_MultiplePromises([task1]);
 
-            this._activePromise = this._deferred.promise();
-            return this._activePromise;
-        }
+        multiPromises.RegisterTask(task2);
+
+        document.querySelector('#multiple').addEventListener('click', function () {
+            multiPromises.EnsureAllResolved().then(console.log, console.log);
+        });
     }
-
-    class JQuery_AsyncTask {
-        get Action() {
-            return this._asyncAction;
-        }
-
-        set Action(asyncAction) {
-            this._asyncAction = asyncAction;
-        }
-
-        get Status() {
-            return this._status;
-        }
-
-        set Status(status) {
-            this._status = status;
-        }
-
-        constructor(action, callbackConfig) {
-            this._status = AsyncStatus.NotPerformed;
-            this._asyncAction = null;
-            this._callbackConfig = {};
-
-            if (callbackConfig) this._callbackConfig = callbackConfig;
-            this.Action = action;
-        }
-
-        Execute(resolve, reject) {
-            const {success, failure} = this._callbackConfig;
-            this.Status = AsyncStatus.Pending;
-            return this.Action().then(result => {
-                this.Status = AsyncStatus.Success;
-                success && success();
-                resolve && resolve(result);
-            }).catch(err => {
-                this.Status = AsyncStatus.Failure;
-                failure && failure();
-                reject && reject(err);
-            });
-        }
-    }
-
-    function asyncTestCustom(...args) {
-        return () => {
-            const deferred = $.Deferred();
-            setTimeout(() => {
-                getRandom(0, 1)
-                    ? deferred.resolve(`Resolved asyncTestCustom, Args: ${args}`)
-                    : deferred.reject(`Rejected asyncTestCustom, Args: ${args}`);
-            }, getRandom(500, 1500));
-            return deferred.promise();
-        }
-    }
-
-    const task1 = new JQuery_AsyncTask(asyncTestCustom(1, 2, 3), {
-        success: () => console.log('Effective MULTI JQUERY Promise job is done'),
-    });
-    const task2 = new JQuery_AsyncTask(asyncTestCustom(5, 6, 7), {
-        success: () => console.log('Effective MULTI JQUERY Promise job is done'),
-    });
-
-    const multiPromises = new JQuery_MultiplePromises([task1]);
-
-    //multiPromises.RegisterTask(task2);
-
-    document.querySelector('#run').addEventListener('click', function () {
-        multiPromises.EnsureAllResolved().then(console.log, console.log);
-    });
-}
 */
 
 /* ------------------------------------- Single Promise Jquery -------------------------------------------*/
@@ -420,7 +447,7 @@ function InitSinglePromiseJQuery() {
         return outerDeferred.promise();
     }
 
-    document.querySelector('#run2').addEventListener('click', function () {
+    document.querySelector('#single').addEventListener('click', function () {
         ensureAllResolved(getDataAndDoSomething)
             .done(console.log);
     });
