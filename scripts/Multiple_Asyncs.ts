@@ -30,27 +30,25 @@ interface IAsyncTask {
 /* ------------------------------------- Multi Promise Native -------------------------------------------*/
 function InitMultiPromisesNative() {
 
-    class MultipleTasks {
+    class AsyncTasks {
 
         private static _registeredTasks: IAsyncTask[] = [];
-        private static _finalResult = {};
+
+        private static _allTasksStatus = AsyncStatus.NotPerformed;
+
+        private static _finalResult: IMultiplePromiseResult = {
+            status: AsyncTasks._allTasksStatus,
+            result: null
+        };
+
         private static _multiTaskPromise = null;
 
-        private static _multiTaskStatus = AsyncStatus.NotPerformed;
-
-        static get MultiTaskStatus(): AsyncStatus {
-            return this._multiTaskStatus;
+        static get AllTasksStatus(): AsyncStatus {
+            return this._allTasksStatus;
         }
 
-        static set MultiTaskStatus(multiTaskStatus: AsyncStatus) {
-            this._multiTaskStatus = multiTaskStatus;
-        }
-
-        private static _getResult() {
-            return {
-                status: this.MultiTaskStatus,
-                result: this._registeredTasks.map(task => task.Result)
-            };
+        static set AllTasksStatus(allTasksStatus: AsyncStatus) {
+            this._allTasksStatus = allTasksStatus;
         }
 
         static RegisterTask(task: IAsyncTask): void {
@@ -62,11 +60,11 @@ function InitMultiPromisesNative() {
         }
 
         static EnsureAllResolved(): Promise<IMultiplePromiseResult> {
-            if (this.MultiTaskStatus === AsyncStatus.Success) return Promise.resolve(this._getResult());
-            if ((this.MultiTaskStatus === AsyncStatus.Pending) && this._multiTaskPromise) return this._multiTaskPromise;
+            if (this.AllTasksStatus === AsyncStatus.Success) return Promise.resolve(this._finalResult);
+            if ((this.AllTasksStatus === AsyncStatus.Pending) && this._multiTaskPromise) return this._multiTaskPromise;
 
             this._multiTaskPromise = new Promise((finalResolve, finalReject) => {
-                this.MultiTaskStatus = AsyncStatus.Pending;
+                this.AllTasksStatus = AsyncStatus.Pending;
                 const promises = [];
                 this._registeredTasks.forEach(task => {
                     if (task && (task.Status === AsyncStatus.NotPerformed || task.Status === AsyncStatus.Failure)) {
@@ -77,13 +75,17 @@ function InitMultiPromisesNative() {
                 Promise
                     .all(promises)
                     .then(() => {
-                            this.MultiTaskStatus = AsyncStatus.Success;
-                            finalResolve(this._getResult());
+                            this.AllTasksStatus = AsyncStatus.Success;
+                            this._finalResult = {
+                                status: this.AllTasksStatus,
+                                result: this._registeredTasks.map(task => task.Result)
+                            };
+                            finalResolve(this._finalResult);
                         }
                     )
                     .catch(err => {
-                            this.MultiTaskStatus = AsyncStatus.Failure;
-                            finalReject({status: this.MultiTaskStatus, result: err});
+                            this.AllTasksStatus = AsyncStatus.Failure;
+                            finalReject({status: this.AllTasksStatus, result: err});
                         }
                     )
             });
@@ -165,11 +167,11 @@ function InitMultiPromisesNative() {
         success: result => console.log('effective MULTI NATIVE Promise job 222 is done', result)
     });
 
-    MultipleTasks.RegisterTask(task1);
-    MultipleTasks.RegisterTask(task2);
+    AsyncTasks.RegisterTask(task1);
+    AsyncTasks.RegisterTask(task2);
 
     document.querySelector('#multiple').addEventListener('click', function () {
-        MultipleTasks.EnsureAllResolved().then(console.log).catch(console.log);
+        AsyncTasks.EnsureAllResolved().then(console.log).catch(console.log);
     });
 }
 
@@ -182,7 +184,7 @@ function InitSinglePromiseNative() {
     let activePromise = null;
     let cachedResult = {};
 
-    function ensureRegistredResolved() {
+    function ensureRegisteredResolved() {
         if (isResolved) return Promise.resolve({status: AsyncStatus.Success, result: cachedResult});
         if (isPending && activePromise) return activePromise;
         activePromise = new Promise((resolve, reject) => {
@@ -227,7 +229,7 @@ function InitSinglePromiseNative() {
     }
 
     document.querySelector('#single').addEventListener('click', function () {
-        ensureRegistredResolved()
+        ensureRegisteredResolved()
             .then(console.log)
             .catch(console.log);
     });
