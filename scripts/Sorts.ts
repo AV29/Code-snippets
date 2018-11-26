@@ -1,19 +1,15 @@
-type sortPredicate = (a: number, b:number) => number
+type sortPredicate = (a: number, b: number) => number
 
 interface Array<T> {
     qSort: () => Array<T>,
+    qSort1: () => Array<T>,
     bubbleSort: (Function?: sortPredicate) => Array<T>
 }
 
-//const testArray = (new Array(1000)).fill(0).map(() => getRandom(1, 100));
-
 Array.prototype.qSort = function quickSort() {
-    if (!this.length) return [];
-    const [head, ...tail] = this;
-    const bigger = [];
-    const smaller = [];
-    tail.forEach(el => el > head ? bigger.push(el) : smaller.push(el));
-    return smaller.qSort().concat(head).concat(bigger.qSort());
+    if (this.length <= 1) return this;
+    const [pin, ...tail] = this;
+    return [...tail.filter(v => v < pin).qSort(), pin, ...tail.filter(v => v >= pin).qSort()];
 };
 
 Array.prototype.bubbleSort = function bubbleSort(predicate = (a, b) => a - b) {
@@ -29,3 +25,39 @@ Array.prototype.bubbleSort = function bubbleSort(predicate = (a, b) => a - b) {
     }
     return this;
 };
+
+function quickSort(arr, left = 0, right = arr.length - 1) {
+    if (arr.length) {
+        let pivot = arr[Math.floor((right + left) / 2)];
+        let i = left;
+        let j = right;
+        let temp;
+        while (i <= j) {
+
+            while (arr[i] < pivot) {
+                i++;
+            }
+            while (arr[j] > pivot) {
+                j--;
+            }
+
+            if (i <= j) {
+                temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+                i++;
+                j--;
+            }
+        }
+
+        if (left < i - 1) {
+            quickSort(arr, left, i - 1);
+        }
+        if (i < right) {
+            quickSort(arr, i, right);
+        }
+    }
+    return arr;
+}
+
+
