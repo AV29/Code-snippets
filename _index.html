@@ -11,9 +11,14 @@
 <body>
 <button id="multiple">MULTIPLE</button>
 <button id="single">SINGLE</button>
-<script src="scripts/QuickSort.js"></script>
+<script src="scripts/Measure_Performance.js"></script>
+<script src="scripts/Random.js"></script>
+<script src="scripts/Sorts.js"></script>
 <script>
-    const testArray = [4, 3, 2, 6, 1, 9, 8, 0];
+    const testArray = (new Array(10)).fill(0).map(() => getRandom(1, 100));
+
+    measurePerformance({func: testArray.qSort, context: testArray, times: 1});
+    measurePerformance({func: testArray.bubbleSort, context: testArray, times: 1, args: [(a, b) => b - a]});
 </script>
 </body>
 </html>
