@@ -15,12 +15,19 @@
 <script src="scripts/Random.js"></script>
 <script src="scripts/Sorts.js"></script>
 <script>
-    const testArray = getRandomizedList(500);
-    measurePerformance({func: testArray.qSort, context: testArray, times: 1000});
-    measurePerformance({func: testArray.sort, context: testArray, times: 1000, args: [(a, b) => a - b]});
+    quicksort1();
+    //const testArray = getRandomizedList(500);
+    const testArray = [8, 9, 1, 2, 5, 10, 3];
+    //const testArray = [4, 2, 6, 5, 3, 9];
+    //measurePerformance({func: testArray.qSort, context: testArray, times: 1000});
+    //measurePerformance({func: testArray.sort, context: testArray, times: 1000, args: [(a, b) => a - b]});
     //measurePerformance({func: testArray.bubbleSort, context: testArray, times: 1000, args: [(a, b) => b - a]});
-    //measurePerformance({func: quickSort, args: [testArray], times: 1000});
+    //testArray.sort((a, b) => a - b);
+    console.log(testArray);
 
+    console.log(partition(testArray, 0, testArray.length - 1));
+
+    console.log(testArray);
 </script>
 </body>
 </html>
