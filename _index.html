@@ -11,10 +11,24 @@
 <body>
 <button id="multiple">MULTIPLE</button>
 <button id="single">SINGLE</button>
+<script src="scripts/Measure_Performance.js"></script>
 <script src="scripts/Random.js"></script>
-<script src="scripts/Multiple_Asyncs.js"></script>
+<script src="scripts/Sorts.js"></script>
 <script>
-    InitMultiPromisesNative();
+    quicksort1();
+    const testArray = getRandomizedList(500);
+    //const testArray = [2, 2, 1, 4, 4, 1, 5, 5, 8, 0];
+    //const testArray = [8, 7, 2, 4, 5];
+    //measurePerformance({func: testArray.qSort, context: testArray, times: 1000});
+    //measurePerformance({func: testArray.sort, context: testArray, times: 1000, args: [(a, b) => a - b]});
+    //measurePerformance({func: testArray.bubbleSort, context: testArray, times: 1000, args: [(a, b) => b - a]});
+    //testArray.sort((a, b) => a - b);
+    console.log(testArray);
+    //console.log(partition(testArray, 0, testArray.length - 1));
+    //quickSort(testArray);
+    measurePerformance({func: quickSort, args: [testArray], times: 1});
+
+    console.log(testArray);
 </script>
 </body>
 </html>

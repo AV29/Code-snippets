@@ -14,3 +14,5 @@ function getRandomColor(): string {
 }
 
 const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+
+const getRandomizedList = (quantity, upperBound = 100, lowerBound = 1) => (new Array(quantity)).fill(0).map(() => getRandom(lowerBound, upperBound));

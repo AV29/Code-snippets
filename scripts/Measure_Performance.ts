@@ -5,18 +5,14 @@
  * First parameter can be omitted, then function is called 1 time.
  * @example measurePerformance(calculateSomethingBig, param_1, param_2, ..., param_N)
  */
-function measurePerformance(...args): void {
+function measurePerformance({func, times = 1, context = this, args = [], maxDisplayArgs = 4}) {
     let result;
-    const isTimesOmitted = typeof args[0] === 'function';
-    const times = isTimesOmitted ? 1 : args[0];
-    const func = isTimesOmitted ? args[0] : args[1];
-    const functionArgs = args.slice(isTimesOmitted ? 1 : 2);
     const start = performance.now();
     for (let i = 0; i < times; i++) {
-        result = func(...functionArgs)
+        result = func.apply(context, args);
     }
     const end = performance.now() - start;
-    console.group(`${func.name}(${!functionArgs[0].length || functionArgs[0].length < 6 ? functionArgs : '...'}) x ${times} times`);
+    console.group(`${func.name}(${args.length > maxDisplayArgs ? args.slice(maxDisplayArgs).join(', ') + '...' : args}) x ${times} times`);
     console.log("Result", result);
     console.log(`Time: ${parseFloat(end.toFixed(2))} ms`);
     console.groupEnd();
