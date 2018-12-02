@@ -10,8 +10,11 @@
  */
 interface IMakeCounter {
     (): number;
+
     set(value: number): void;
+
     get(): number;
+
     reset(): void;
 }
 
@@ -156,3 +159,20 @@ function calcUnlimited(firstArg) {
 
     return next;
 }
+
+/**
+ * @name calcUnlimitedRecursive
+ * @description In contrast to previous function this one does not hold it's state from call to call
+ * @example calcUnlimitedRecursive(1)(2)(3)(4)(67)(12)...(N)
+ */
+const calcUnlimitedRecursive = function (current) {
+    const inner = function (next) {
+        return calcUnlimitedRecursive(current + next);
+    };
+
+    inner.toString = function () {
+        return current;
+    };
+
+    return inner;
+};
