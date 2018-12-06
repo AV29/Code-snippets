@@ -16,13 +16,15 @@ function Wolf(name) {
     this.name = name;
     //Animal.apply(this, arguments);
 }
-function inherit(proto) {
+function extend(proto) {
     function F() {
     }
 
     F.prototype = proto;
     return new F;
 }
+
+//object.__proto__ = Human.prototype;
 //Wolf.prototype = Object.create(Animal.prototype);
 Wolf.prototype = Object.create(Animal.prototype);
 //Wolf.prototype.constructor = Wolf;
@@ -41,23 +43,31 @@ console.log(wolfy);
 // B.bb=function (){alert('');}
 // console.log(a.bb())
 
-function Human(name) {
-    this.name = name;
+function Human() {
+    this.name = 'Human';
 }
 
 function Anton(age) {
     this.age = age;
 }
 
+function Tosik(age) {
+    this.age = age;
+}
+
 Human.prototype.qwerty = 'xxx';
 Human.prototype.name = 'Shit';
 
-Anton.prototype = new Human('Anton');//Object.create(Human.prototype);
+Anton.prototype = /*new Human('Anton');*/Object.create(Human.prototype);
+Tosik.prototype = extend(Human.prototype);
 Anton.prototype.constructor = Anton;
+Tosik.prototype.constructor = Tosik;
 Anton.prototype.name = 'Volos';
+Tosik.prototype.name = 'Volos';
 
 
 const anton = new Anton(30);
+const tosik = new Tosik(30);
 
 /**
  *
@@ -69,7 +79,7 @@ const anton = new Anton(30);
 
  const hum = {legsCount: 2}
 
- Anton.prototype = hum; // every newly created object’s __proto__ will point at Atnon.prototype, in this case hum object
+ Anton.prototype = hum; // every newly created object’s __proto__ will point at Anton.prototype, in this case hum object
 
  var ant = new Anton();  // ant.legsCount === 2
 
@@ -82,7 +92,21 @@ const anton = new Anton(30);
 
  So the right choice is to Anton.prototype = Object.create(Human.prototype);
  and don’t forget to save constructor property Anton.prototype.constructor = Anton;
- 
+
+ Object.create (extend) under the hood does this:
+ function extend(proto) {
+    function F() {
+    }
+
+    F.prototype = proto;
+    return new F;
+}
+
+ it creates and returns an empty object which __proto__ is set to what we wanted -> Human.prototype. We could pass any custom object like {twoLegs: true}
+
+ so basically we then make our Anton.prototype pointing on this empty object. But the main point is that is has in its __proto__ reference -> Human.prototype
+ //object.__proto__ = Human.prototype;
+
  var a = new Anton();
  var b = new Anton();
  a === b // false
