@@ -21,7 +21,9 @@ function extend(proto) {
     }
 
     F.prototype = proto;
-    return new F;
+    var object = new F;
+    debugger;
+    return object;
 }
 
 //object.__proto__ = Human.prototype;
@@ -91,6 +93,7 @@ const tosik = new Tosik(30);
 
 
  So the right choice is to Anton.prototype = Object.create(Human.prototype);
+
  and don’t forget to save constructor property Anton.prototype.constructor = Anton;
 
  Object.create (extend) under the hood does this:
@@ -100,12 +103,21 @@ const tosik = new Tosik(30);
 
     F.prototype = proto;
     return new F;
-}
+ }
 
  it creates and returns an empty object which __proto__ is set to what we wanted -> Human.prototype. We could pass any custom object like {twoLegs: true}
-
+ // object.__proto__ === Human.prototype // true
  so basically we then make our Anton.prototype pointing on this empty object. But the main point is that is has in its __proto__ reference -> Human.prototype
  //object.__proto__ = Human.prototype;
+ //Anton.prototype = object (which __proto__ leads us to Human.prototype) ==> Anton.prototype.__proto__ = Human.prototype
+ or (as for future Anton objects: anton.__proto__ === Anton.prototype (it is set automatically)) anton.__proto__.__proto__ = Human.prototype;
+
+ same here:
+
+ Anton.prototype.__proto__ === Human.prototype // true!
+ so Anton.prototype.__proto__ would get for us a parent's prototype object
+ ... every time when we create new Anton -> anton's object __proto__ points on its own prototype (Anton.prototype)
+ and anton.__proto__.__proto__ which is Anton.prototype.__proto__ points on Human.prototype
 
  var a = new Anton();
  var b = new Anton();
