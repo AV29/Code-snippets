@@ -176,3 +176,10 @@ const calcUnlimitedRecursive = function (current) {
 
     return inner;
 };
+
+
+/**
+ * Closure - is an implicit, permanent link between a function ans its original scope chain.
+ * Every time you run a function, it runs with a scope chain based on where it was defined (not where it is run).
+ * That allows to run functions outside it's original scope chain and preserve necessary data in closure.
+ * */
