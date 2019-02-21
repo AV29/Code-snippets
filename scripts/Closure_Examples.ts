@@ -10,8 +10,11 @@
  */
 interface IMakeCounter {
     (): number;
+
     set(value: number): void;
+
     get(): number;
+
     reset(): void;
 }
 
@@ -156,3 +159,27 @@ function calcUnlimited(firstArg) {
 
     return next;
 }
+
+/**
+ * @name calcUnlimitedRecursive
+ * @description In contrast to previous function this one does not hold it's state from call to call
+ * @example calcUnlimitedRecursive(1)(2)(3)(4)(67)(12)...(N)
+ */
+const calcUnlimitedRecursive = function (current) {
+    const inner = function (next) {
+        return calcUnlimitedRecursive(current + next);
+    };
+
+    inner.toString = function () {
+        return current;
+    };
+
+    return inner;
+};
+
+
+/**
+ * Closure - is an implicit, permanent link between a function ans its original scope chain.
+ * Every time you run a function, it runs with a scope chain based on where it was defined (not where it is run).
+ * That allows to run functions outside it's original scope chain and preserve necessary data in closure.
+ * */
