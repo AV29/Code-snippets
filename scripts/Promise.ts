@@ -55,3 +55,39 @@ function getDemoAction() {
         }, getRandom(500, 1500));
     });
 }
+
+/* Function chained promises Action */
+function chainedPromicesDemo() {
+    function createPromise(ms) {
+        return new Promise((resolve) => {
+            setTimeout(() => resolve(ms), ms);
+        });
+    }
+
+    let start = performance.now();
+
+    return createPromise(1000)
+        .then(resultMS => createPromise(resultMS))
+        .then(resultMS => {
+            console.log('Intermediate result: ', resultMS);
+            return createPromise(resultMS)
+        })
+        .then(resultMS => createPromise(resultMS))
+        .then(result => console.log('Last Result', result, ' time elapsed ', performance.now() - start));
+}
+
+/* Async task example */
+function asyncTaskExample() {
+    console.log('top console.log');
+
+    setTimeout(() => console.log('setTimeout'), 3);
+
+    new Promise((resolve) => {
+        setTimeout(resolve, 1);
+    })
+        .then(() => console.log('then'))
+        .catch(() => console.log('catch'));
+        //.finally(() => console.log('finally'));
+
+    console.log('bottom console.log');
+}
