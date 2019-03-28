@@ -10,7 +10,7 @@ class AntonInsecure {
     }
 
     constructor(age: number) {
-        this.Age = age;
+        this._age = age;
     }
 }
 

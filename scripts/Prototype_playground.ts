@@ -64,7 +64,6 @@ Anton.prototype = /*new Human('Anton');*/Object.create(Human.prototype);
 Tosik.prototype = extend(Human.prototype);
 Anton.prototype.constructor = Anton;
 Tosik.prototype.constructor = Tosik;
-Anton.prototype.name = 'Volos';
 Tosik.prototype.name = 'Volos';
 
 
