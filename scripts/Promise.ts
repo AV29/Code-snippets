@@ -90,4 +90,5 @@ function asyncTaskExample() {
         //.finally(() => console.log('finally'));
 
     console.log('bottom console.log');
+    return 1;
 }
