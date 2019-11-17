@@ -1,4 +1,5 @@
 namespace SpiralWalkThrough {
+
     const exampleArray = [
         [1, 2, 3, 4, 5],
         [6, 7, 8, 9, 10],
@@ -8,15 +9,27 @@ namespace SpiralWalkThrough {
         [26, 27, 28, 29, 30]
     ];
 
-    function getSpiralLoop(array) {
+    export function generateArray(x, y, range = 100) {
+        const result = [];
+        for (let i = 0; i < x; i++) {
+            result.push([]);
+            for (let j = 0; i < y; j++) {
+                result[i].push(Math.random());
+            }
+        }
+
+        return result;
+    }
+
+    export function getSpiralLoop(array) {
         let right, down, left, up;
         let depth = 0;
         let elementNumber = 0;
 
         const result = [];
 
-        let isEnough = el => {
-            result.push(el);
+        let isEnough = (x, y) => {
+            result.push({x, y, element: array[x][y]});
             elementNumber += 1;
             return elementNumber === array.length * array[0].length;
         };
@@ -25,13 +38,13 @@ namespace SpiralWalkThrough {
 
             right = depth;
             while (right < array[0].length - depth) {
-                if (isEnough(array[depth][right])) return result;
+                if (isEnough(depth, right)) return result;
                 right += 1;
             }
 
             down = depth + 1;
             while (down < array.length - depth) {
-                if (isEnough(array[down][array[0].length - depth - 1])) return result;
+                if (isEnough(down, array[0].length - depth - 1)) return result;
                 down += 1;
             }
 
@@ -39,19 +52,19 @@ namespace SpiralWalkThrough {
 
             left = array[0].length - depth;
             while (left > depth) {
-                if (isEnough(array[array.length - depth][left - 1])) return result;
+                if (isEnough(array.length - depth, left - 1)) return result;
                 left -= 1;
             }
 
             up = array.length - depth;
             while (up > depth - 1) {
-                if (isEnough(array[up][depth - 1])) return result;
+                if (isEnough(up, depth - 1)) return result;
                 up -= 1;
             }
         }
     }
 
-    function getSpiralRecursion(array, result = []) {
+    export function getSpiralRecursive(array, result = []) {
 
         if (!array.length) return result;
 
@@ -63,6 +76,6 @@ namespace SpiralWalkThrough {
 
         for (let i = array.length - 1; i >= 0; i--) result.push(array[i].shift());
 
-        return getSpiralRecursion(array, result);
+        return getSpiralRecursive(array, result);
     }
 }
