@@ -5,19 +5,14 @@
     <title>Title</title>
     <script src="3rd%20party/ramda.min.js"></script>
     <script src="3rd%20party/moment.min.js"></script>
-    <script src="./scripts/Singleton.js"></script>
+    <script src="./scripts/SetLeadingZeros.js"></script>
 </head>
 <body>
 
 <script>
 
-    const singleton1 = SingletonTester.getInstance({ pointX: 3 });
-
-    console.log(singleton1);
-
-    const singleton2 = SingletonTester.getInstance({ pointX: 10, pointY: 80 });
-
-    console.log(singleton2);
+    console.log(setLeadingZeros(1234, 3));
+    console.log(seLeadingZerosString(1234, 3));
 
 </script>
 
