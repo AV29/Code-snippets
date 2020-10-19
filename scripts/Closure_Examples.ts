@@ -142,6 +142,27 @@ function calcWithReduce(firstArg) {
     return next;
 }
 
+
+/**
+ * @name calcWithFinish
+ *
+ * @example calcWithReduce(1)(2)(3)(4)()
+ */
+function calcWithFinish (firstArg) {
+    let result = firstArg;
+    const next = function(nextArg) {
+        if(nextArg) {
+            result += nextArg;
+            return next;
+        } else {
+            return result;
+        }
+    };
+
+    return next;
+
+}
+
 /**
  * @name calcUnlimited
  * @example calcUnlimited(1)(2)(3)(4)(67)(12)...(N)

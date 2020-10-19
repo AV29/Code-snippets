@@ -5,16 +5,34 @@
     <title>Title</title>
     <script src="3rd%20party/ramda.min.js"></script>
     <script src="3rd%20party/moment.min.js"></script>
-    <script src="./scripts/SetLeadingZeros.js"></script>
 </head>
 <body>
 
-<script>
+<div id="outterDiv">
+	<div id="div">
+	   Press Me
+    </div>
+</div>
 
-    console.log(setLeadingZeros(1234, 3));
-    console.log(seLeadingZerosString(1234, 3));
-
+<script src="./scripts/Curry.js">
 </script>
 
+    <script>
+        const sum = (a, b, c, d, e) => {
+            return a + b + c + d + e;
+        };
+
+        const f1 = sum.curry(1, 2, 3, 4);
+        console.log(f1(5));
+
+        const f2 = sum.curry(1);
+        console.log(f2(2, 3, 4, 5));
+
+        const f3 = sum.curry(1);
+        console.log(f3(2)(3)(4)(5));
+
+        console.log(sumX(1)(2));
+
+    </script>
 </body>
 </html>
