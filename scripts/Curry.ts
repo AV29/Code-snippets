@@ -13,16 +13,3 @@ Function.prototype.curry = function(...args) {
         ? this(...args)
         : (...nextArgs) => this.curry(...args, ...nextArgs)
 };
-
-
-const sumX = (current) => {
-
-    const next = nextArg => {
-        return sumX(current + nextArg);
-    };
-
-    next.toString = () => current;
-
-    return next;
-
-};
