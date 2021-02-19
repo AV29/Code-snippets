@@ -24,7 +24,7 @@ Write a function that takes in a non-empty array of distinct integers and an
   O( n ) time | O( n ) space , n - length of input array
 */
 
-//Brute Force
+//Brute Force  time O(n^2) - space O(1)
 const twoSum_brute = (targetSum, numbers) => {
   for(let i = 0; i < numbers.length - 1; i++) {
     for(let j = i + 1; j < numbers.length; j++) {
@@ -34,17 +34,27 @@ const twoSum_brute = (targetSum, numbers) => {
     }
   }
   return [];
-}
+};
 
-//Optimal
-const twoSum = (targetSum, numbers, memo = {}) => {
+//Optimal  time O(n) - space O(n)
+const twoSum_memo = (targetSum, numbers, memo = {}) => {
     for (let num of numbers) {
         const rem = targetSum - num;
         if (memo[num]) return [ memo[num], num ];
         memo[rem] = num;
     }
     return [];
-}
+};
 
+const twoSum_sorted = (targetSum, numbers) => {
+    numbers.sort((a, b) => a - b);
+    for (let i = 0, j = numbers.length - 1; i < j;) {
+        const sum = numbers[i] + numbers[j];
+        if(sum > targetSum) j--;
+        else if(sum < targetSum) i++;
+        else return [numbers[i], numbers[j]];
+    }
+    return [];
+};
 
 // console.log(twoSum(10, [11, 5, 8, -1, 3, 1, -4, 6]));

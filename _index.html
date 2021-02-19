@@ -65,10 +65,18 @@
 
         // <Dropdown  options={props.options} ... />
 
+        const twoSum = (targetSum, numbers) => {
+            numbers.sort((a, b) => a - b);
+            for (let i = 0, j = numbers.length - 1; i < j; ) {
+                const sum = numbers[i] + numbers[j];
+                if(sum > targetSum) j--;
+                else if(sum < targetSum) i++;
+                else return [numbers[i], numbers[j]];
+            }
+            return [];
+        };
 
-
-
-
+        console.log(twoSum(10, [11, 2, -3, -2, 8, 0]));
     </script>
 
 </body>
