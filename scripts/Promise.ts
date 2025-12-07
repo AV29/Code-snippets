@@ -1,6 +1,6 @@
 const delay = time => new Promise(res => setTimeout(() => {
     console.log('Ready!');
-    res();
+    res(time);
 }, time));
 
 const createPromise = () => new Promise((res, rej) => {
